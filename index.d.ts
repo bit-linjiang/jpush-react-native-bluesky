@@ -160,6 +160,8 @@ export default class JPush {
    *
    * content:对应“通知内容”字段
    *
+   * broadcastTime: 对应“推送时间”字段
+   *
    * extras:对应“附加内容”字段
    *
    */
@@ -167,6 +169,7 @@ export default class JPush {
     messageID: string;
     title: string;
     content: string;
+    broadcastTime: string;
     extras: Extra;
   }): void;
 
@@ -273,6 +276,10 @@ export default class JPush {
        * 对应“通知内容”字段
        */
       content: string;
+      /**
+       * 对应“推送时间”字段
+       */
+      broadcastTime: string;
       /**
        * 对应“附加内容”字段
        */

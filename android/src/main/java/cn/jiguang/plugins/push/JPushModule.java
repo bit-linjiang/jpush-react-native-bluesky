@@ -378,10 +378,16 @@ public class JPushModule extends ReactContextBaseJavaModule {
         int id = Integer.valueOf(notificationID);
         String notificationTitle = readableMap.hasKey(JConstants.TITLE) ? readableMap.getString(JConstants.TITLE) : reactContext.getPackageName();
         String notificationContent = readableMap.hasKey(JConstants.CONTENT) ? readableMap.getString(JConstants.CONTENT) : reactContext.getPackageName();
+        //获取推送时间
+        String broadcastTimeStr = readableMap.getString(JConstants.BROADCAST_TIME);
         JPushLocalNotification notification = new JPushLocalNotification();
         notification.setNotificationId(id);
         notification.setTitle(notificationTitle);
         notification.setContent(notificationContent);
+        //若配置了推送时间
+        if (broadcastTimeStr != null) {
+            notification.setBroadcastTime(Long.parseLong(broadcastTimeStr));
+        }
         if (readableMap.hasKey(JConstants.EXTRAS)) {
             ReadableMap notificationExtra = readableMap.getMap(JConstants.EXTRAS);
             JSONObject notificationExtraJson = new JSONObject(notificationExtra.toHashMap());
