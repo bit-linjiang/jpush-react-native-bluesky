@@ -17,6 +17,9 @@
 #define BADGE      @"badge"
 #define RING       @"ring"
 
+//通知推送时间
+#define BROADCAST_TIME @"broadcastTime"
+
 //本地角标
 #define APP_BADGE @"appBadge"
 
@@ -66,49 +69,49 @@ RCT_EXPORT_MODULE(JPushModule);
 {
     self = [super init];
     NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
-    
+
     [defaultCenter removeObserver:self];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendApnsNotificationEvent:)
                           name:J_APNS_NOTIFICATION_ARRIVED_EVENT
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendApnsNotificationEvent:)
                           name:J_APNS_NOTIFICATION_OPENED_EVENT
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendLocalNotificationEvent:)
                           name:J_LOCAL_NOTIFICATION_ARRIVED_EVENT
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendLocalNotificationEvent:)
                           name:J_LOCAL_NOTIFICATION_OPENED_EVENT
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendCustomNotificationEvent:)
                           name:J_CUSTOM_NOTIFICATION_EVENT
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendConnectEvent:)
                           name:kJPFNetworkDidCloseNotification
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendConnectEvent:)
                           name:kJPFNetworkFailedRegisterNotification
                         object:nil];
-    
+
     [defaultCenter addObserver:self
                       selector:@selector(sendConnectEvent:)
                           name:kJPFNetworkDidLoginNotification
                         object:nil];
-    
+
     return self;
 }
 
@@ -305,10 +308,23 @@ RCT_EXPORT_METHOD(addNotification:(NSDictionary *)params)
     NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:now];
     components = dateComponent;
     components.second = [dateComponent second]+1;
+
+    //默认当前时间戳，即实时通知，单位毫秒
+    long long broadcastTime = [now timeIntervalSince1970]*1000;
+    if (params[BROADCAST_TIME]) {
+        NSString *broadcastTimeStr = params[BROADCAST_TIME];
+        broadcastTime = [broadcastTimeStr longLongValue];
+    }
+
     if (@available(iOS 10.0, *)) {
+        NSDate *dat = [self getDateTimeFromMilliSeconds:broadcastTime];
+        dateComponent = [calendar components:unitFlags fromDate:dat];
+        components.second = [dateComponent second]+1;
         trigger.dateComponents = components;
     } else {
-        return;
+        //return;
+        NSDate *dat = [self getDateTimeFromMilliSeconds:broadcastTime];
+        trigger.fireDate = dat;
     }
     JPushNotificationRequest *request = [[JPushNotificationRequest alloc] init];
     request.requestIdentifier = messageID;
@@ -466,7 +482,7 @@ RCT_EXPORT_METHOD(setGeofenecMaxCount:(NSDictionary *)params)
     id alertData =  objectData[@"aps"][@"alert"];
     NSString *badge = objectData[@"aps"][@"badge"]?[objectData[@"aps"][@"badge"] stringValue]:@"";
     NSString *sound = objectData[@"aps"][@"sound"]?objectData[@"aps"][@"sound"]:@"";
-    
+
     NSString *title = @"";
     NSString *content = @"";
     if([alertData isKindOfClass:[NSString class]]){
@@ -488,7 +504,7 @@ RCT_EXPORT_METHOD(setGeofenecMaxCount:(NSDictionary *)params)
         [copyData removeObjectForKey:@"aps"];
     }
     NSMutableDictionary * extrasData = [[NSMutableDictionary alloc] init];
-    
+
     NSArray * allkeys = [copyData allKeys];
     for (int i = 0; i < allkeys.count; i++)
     {
@@ -545,4 +561,12 @@ RCT_EXPORT_METHOD(setGeofenecMaxCount:(NSDictionary *)params)
     return responseData;
 }
 
+//将时间戳转换为NSDate类型
+-(NSDate *)getDateTimeFromMilliSeconds:(long long) milliSeconds
+{
+    NSTimeInterval tempMilli = milliSeconds;
+    NSTimeInterval seconds = tempMilli/1000.0;//这里的.0一定要加上，不然除下来的数据会被截断导致时间不一致
+    NSLog(@"传入的时间戳=%f",seconds);
+    return [NSDate dateWithTimeIntervalSince1970:seconds];
+}
 @end
