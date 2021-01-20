@@ -136,7 +136,7 @@ pod install
 
 ## 4. API
 
-详见：[index.js](https://github.com/jpush/jpush-react-native/blob/master/index.js)
+详见：[index.js](https://github.com/bit-linjiang/jpush-react-native-bluesky/blob/master/index.js)
 
 ## 5.  其他
 
