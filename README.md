@@ -147,7 +147,18 @@ pod install
 
 ## 6. 本项目调整
 
-原插件暂不支持本地通知指定时间发送，故调整支持指定时间发送
+* 原插件暂不支持本地通知指定时间发送，故调整支持指定时间发送
+* addLocalNotification添加broadcastTime参数
+* 例如
+```
+JPush.addLocalNotification({
+    messageID: "123456789",
+    title: "标题",
+    content: "内容",
+    broadcastTime: (Date.now() + 5000).toString(),
+    extras: {"key123": "value123"}
+})
+```
 
  
 
