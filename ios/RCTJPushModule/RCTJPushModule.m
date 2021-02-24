@@ -313,12 +313,16 @@ RCT_EXPORT_METHOD(addNotification:(NSDictionary *)params)
     long long broadcastTime = [now timeIntervalSince1970]*1000;
     if (params[BROADCAST_TIME]) {
         NSString *broadcastTimeStr = params[BROADCAST_TIME];
-        broadcastTime = [broadcastTimeStr longLongValue];
+        long long broadcastTimeLong = [broadcastTimeStr longLongValue];
+        if (broadcastTimeLong > broadcastTime) {
+            broadcastTime = broadcastTimeLong;
+        }
     }
 
     if (@available(iOS 10.0, *)) {
         NSDate *dat = [self getDateTimeFromMilliSeconds:broadcastTime];
         dateComponent = [calendar components:unitFlags fromDate:dat];
+        components = dateComponent;
         components.second = [dateComponent second]+1;
         trigger.dateComponents = components;
     } else {
@@ -566,7 +570,6 @@ RCT_EXPORT_METHOD(setGeofenecMaxCount:(NSDictionary *)params)
 {
     NSTimeInterval tempMilli = milliSeconds;
     NSTimeInterval seconds = tempMilli/1000.0;//这里的.0一定要加上，不然除下来的数据会被截断导致时间不一致
-    NSLog(@"传入的时间戳=%f",seconds);
     return [NSDate dateWithTimeIntervalSince1970:seconds];
 }
 @end
